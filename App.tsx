@@ -1381,6 +1381,29 @@ const App: React.FC = () => {
         return processItem(data);
     };
 
+    const renderApiCellValue = (key: string, value: any) => {
+        const lowerKey = key.toLowerCase();
+        const strVal = String(value).toLowerCase();
+
+        // 1. Handle Boolean icons
+        if (strVal === 'true') return <CheckCircle className="w-4 h-4 text-emerald-500 mx-auto" />;
+        if (strVal === 'false') return <XCircle className="w-4 h-4 text-rose-500 mx-auto" />;
+
+        // 2. Handle Confidence percentage
+        if (lowerKey.includes('confidence')) {
+            const num = parseFloat(String(value));
+            if (!isNaN(num)) {
+                // If it's 0-1 range, multiply by 100
+                const percent = num <= 1 ? (num * 100).toFixed(0) : num.toFixed(0);
+                return <span className="font-bold text-blue-500">{percent}%</span>;
+            }
+        }
+
+        // 3. Default fallback
+        if (typeof value === 'object' && value !== null) return JSON.stringify(value);
+        return String(value);
+    };
+
     const handleApiExport = async () => {
         const dataToExport = rows.map(r => ({
             ...r.originalData,
@@ -1978,7 +2001,7 @@ const App: React.FC = () => {
                                                     <tr key={i} className={`group ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'} transition-colors`}>
                                                         {Object.keys(apiResponseData[0] || {}).map(k => (
                                                             <td key={`${i}-${k}`} className={`p-4 border-b ${theme === 'dark' ? 'border-white/10 text-violet-100' : 'border-slate-50 text-slate-800'}`}>
-                                                                {typeof row[k] === 'object' ? JSON.stringify(row[k]) : String(row[k])}
+                                                                {renderApiCellValue(k, row[k])}
                                                             </td>
                                                         ))}
                                                     </tr>
@@ -1999,7 +2022,7 @@ const App: React.FC = () => {
                                                 <tr key={k} className={`group ${theme === 'dark' ? 'hover:bg-white/5' : 'hover:bg-black/5'} transition-colors`}>
                                                     <td className={`p-3 border-b ${theme === 'dark' ? 'border-white/10 text-violet-400' : 'border-black/10 text-slate-600'} font-medium`}>{k}</td>
                                                     <td className={`p-3 border-b ${theme === 'dark' ? 'border-white/10 text-violet-100' : 'border-black/10 text-slate-800'}`}>
-                                                        {typeof v === 'object' ? JSON.stringify(v) : String(v)}
+                                                        {renderApiCellValue(k, v)}
                                                     </td>
                                                 </tr>
                                             ))}
